@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>REBELS · Carpool Rider</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f5f7fb; --surface: #ffffff; --surface3: #eef2f7;
+    --line: rgba(37, 99, 235, 0.12); --line2: rgba(15, 23, 42, 0.08);
+    --accent: #2563eb; --accent-deep: #1d4ed8; --accent-soft: #dbeafe;
+    --gold: #0d9488; --gold-bright: #0d9488; --text: #0f172a; --text-dim: #475569; --text-mute: #64748b;
+    --heavy: #e11d48; --medium: #ea580c; --light: #059669; --ok: #059669; --danger: #e11d48;
+    --radius: 18px; --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: "DM Sans", system-ui, sans-serif; background: radial-gradient(900px 420px at 50% -5%, rgba(37,99,235,.08), transparent 55%), var(--bg); color: var(--text); display: flex; justify-content: center; min-height: 100dvh; }
+  .device { width: 100%; max-width: 390px; min-height: 100dvh; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+  .topbar { padding: 18px 18px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line2); background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 10; }
+  .brand-block { display: flex; flex-direction: column; gap: 2px; }
+  .brand { font-size: 11px; font-weight: 800; letter-spacing: 0.22em; color: var(--accent-deep); text-transform: uppercase; }
+  .team { font-size: 10px; color: var(--text-mute); letter-spacing: 0.08em; }
+  .content { flex: 1; overflow-y: auto; padding: 18px 18px 40px; -webkit-overflow-scrolling: touch; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: rise 0.28s cubic-bezier(.2,.8,.2,1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 6px; }
+  h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 6px; }
+  .lead { font-size: 13.5px; color: var(--text-dim); line-height: 1.5; margin-bottom: 18px; }
+
+  .map-placeholder { width: 100%; height: 140px; background: #e2e8f0; border-radius: var(--radius); margin-bottom: 16px; position: relative; overflow: hidden; background-image: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px); background-size: 20px 20px; display: flex; align-items: center; justify-content: center; }
+  .map-pin { font-size: 32px; }
+
+  .input-group { margin-bottom: 14px; }
+  .input-group label { font-size: 11px; font-weight: 700; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
+  .input-box { background: var(--surface); border: 1px solid var(--line2); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.green { background: var(--light); }
+  .dot.red { background: var(--heavy); }
+  .input-box input { border: none; outline: none; font-family: inherit; font-size: 14px; font-weight: 600; width: 100%; background: transparent; color: var(--text); }
+
+  .btn { width: 100%; border: none; border-radius: 14px; padding: 15px 16px; font-family: inherit; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; cursor: pointer; transition: transform .12s; }
+  .btn:active { transform: scale(.98); }
+  .btn-main { background: linear-gradient(135deg, #2563eb, #0d9488); color: #ffffff; box-shadow: 0 8px 22px rgba(37,99,235,.2); }
+  .btn-ghost { background: transparent; color: var(--accent-deep); border: 1px solid var(--line2); margin-top: 8px; }
+
+  .panel { background: var(--surface); border: 1px solid var(--line2); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; position: relative; overflow: hidden; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04); }
+  .panel.gold-edge::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--gold-bright)); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .meta { font-size: 11px; color: var(--text-mute); letter-spacing: 0.04em; }
+  .val { font-size: 14px; font-weight: 600; color: var(--text); }
+  .val.mono { font-family: "JetBrains Mono", monospace; color: var(--accent-deep); }
+
+  .eco-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(13, 148, 136, 0.12); color: var(--gold); font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; margin-bottom: 12px; }
+
+  .match-card { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--line2); border-radius: 14px; margin-bottom: 10px; cursor: pointer; transition: border-color .2s; }
+  .match-card:active { border-color: var(--accent); }
+  .match-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; font-size: 20px; }
+  .match-info { flex: 1; }
+  .match-name { font-size: 14px; font-weight: 700; }
+  .match-detail { font-size: 12px; color: var(--text-mute); margin-top: 2px; }
+  .match-price { font-family: "JetBrains Mono", monospace; font-weight: 700; color: var(--accent-deep); }
+
+  .radar-container { display: flex; flex-direction: column; align-items: center; padding: 40px 0; }
+  .radar { width: 120px; height: 120px; border-radius: 50%; position: relative; background: radial-gradient(circle, var(--accent-soft) 20%, transparent 21%, var(--accent-soft) 40%, transparent 41%, var(--accent-soft) 60%, transparent 61%); border: 2px solid var(--accent-soft); display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+  .radar .ico { font-size: 40px; }
+
+  .driver-info { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .driver-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .otp-box { background: var(--surface3); border: 1px dashed var(--accent); border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 16px; }
+  .otp-box .label { font-size: 10px; color: var(--text-mute); font-weight: 700; letter-spacing: 0.1em; }
+  .otp-box .code { font-family: "JetBrains Mono", monospace; font-size: 28px; font-weight: 700; color: var(--accent-deep); letter-spacing: 0.2em; }
+  .toast { position: absolute; left: 16px; right: 16px; bottom: 30px; background: rgba(255, 255, 255, 0.97); border: 1px solid var(--line); color: var(--accent-deep); padding: 12px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; display: none; z-index: 30; backdrop-filter: blur(8px); box-shadow: var(--shadow); }
+  .toast.show { display: block; animation: rise .25s ease; }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topbar">
+    <div class="brand-block">
+      <div class="brand">Carpool Rider</div>
+      <div class="team">REBELS · TS-001</div>
+    </div>
+    <div class="eco-badge">🌱 Eco Ride</div>
+  </div>
+
+  <div class="content">
+    <!-- BOOKING SCREEN -->
+    <section id="booking" class="screen active">
+      <div class="eyebrow">Where are you going?</div>
+      <h1>Share a ride.<br>Split the cost.</h1>
+      <p class="lead">Find commuters driving your route. Save money, beat traffic, and reduce your carbon footprint.</p>
+
+      <div class="map-placeholder">
+        <span class="map-pin">🗺️</span>
+      </div>
+
+      <div class="input-group">
+        <label>Pickup</label>
+        <div class="input-box">
+          <div class="dot green"></div>
+          <input type="text" id="pickupInput" value="Whitefield Main" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Drop</label>
+        <div class="input-box">
+          <div class="dot red"></div>
+          <input type="text" id="dropInput" value="MG Road Metro" />
+        </div>
+      </div>
+
+      <div class="panel gold-edge">
+        <div class="row" style="margin-bottom: 8px;">
+          <span class="meta">Estimated Pool Fare</span>
+          <span class="val mono" style="font-size: 18px;">₹60</span>
+        </div>
+        <div class="row" style="border-top: 1px solid var(--line2); padding-top: 8px;">
+          <span class="meta">vs. Uber/Auto (~₹180)</span>
+          <span class="val mono" style="color: var(--ok); font-size: 14px;">Save ₹120</span>
+        </div>
+      </div>
+
+      <button class="btn btn-main" onclick="searchCarpools()">Find Carpools</button>
+    </section>
+
+    <!-- SEARCHING SCREEN -->
+    <section id="searching" class="screen">
+      <div class="radar-container">
+        <div class="radar"><span class="ico">📡</span></div>
+      </div>
+      <h1 style="text-align: center;">Finding matches...</h1>
+      <p class="lead" style="text-align: center;">Looking for drivers heading to MG Road. Connecting you to save fuel.</p>
+    </section>
+
+    <!-- MATCHES SCREEN -->
+    <section id="matches" class="screen">
+      <div class="eyebrow">Available Carpools</div>
+      <h1>3 Drivers found</h1>
+      <p class="lead">All drivers are verified commuters. Select a ride to book.</p>
+
+      <div id="matchList"></div>
+    </section>
+
+    <!-- CONFIRMED SCREEN -->
+    <section id="confirmed" class="screen">
+      <div class="eyebrow">Carpool Booked!</div>
+      <h1>Driver is on the way.</h1>
+      <p class="lead">Share the OTP with the driver to start the ride.</p>
+
+      <div class="driver-info">
+        <div class="driver-avatar">👨🏽‍🦱</div>
+        <div>
+          <div class="val" id="driverName">Rahul S.</div>
+          <div class="meta" id="driverCar">Honda City · KA-01-AB-1234</div>
+        </div>
+        <div class="val mono">₹60</div>
+      </div>
+
+      <div class="otp-box">
+        <div class="label">RIDE OTP</div>
+        <div class="code">4 8 2 1</div>
+      </div>
+
+      <div class="panel">
+        <div class="row" style="margin-bottom: 10px;">
+          <span class="meta">Status</span>
+          <span class="val" id="rideStatus" style="color: var(--accent-deep);">Driver Arriving</span>
+        </div>
+        <div class="row">
+          <span class="meta">ETA to Pickup</span>
+          <span class="val mono">5 mins</span>
+        </div>
+      </div>
+
+      <button class="btn btn-main" id="statusBtn" onclick="advanceRide()">Simulate Trip Progress</button>
+      <button class="btn btn-ghost" onclick="resetApp()">Cancel Ride</button>
+    </section>
+
+    <!-- COMPLETED SCREEN -->
+    <section id="completed" class="screen">
+      <div class="eyebrow">Trip Complete</div>
+      <h1>You've arrived!</h1>
+      <p class="lead">Thank you for carpooling. Here is your receipt.</p>
+
+      <div class="panel gold-edge">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div style="font-size: 40px;">🌱</div>
+          <div class="meta" style="margin-top: 8px;">ENVIRONMENTAL IMPACT</div>
+          <div class="val" style="color: var(--gold); font-size: 16px;">You saved 2.4kg of CO2</div>
+        </div>
+        <div class="row" style="border-top: 1px solid var(--line2); padding-top: 12px; margin-bottom: 8px;">
+          <span class="meta">Pool Fare Paid</span>
+          <span class="val mono">₹60</span>
+        </div>
+        <div class="row" style="margin-bottom: 8px;">
+          <span class="meta">Payment Method</span>
+          <span class="val">UPI / FamPay</span>
+        </div>
+        <div class="row">
+          <span class="meta">Money Saved vs Taxi</span>
+          <span class="val mono" style="color: var(--ok);">+₹120</span>
+        </div>
+      </div>
+
+      <button class="btn btn-main" onclick="resetApp()">Book Another Ride</button>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const MOCK_DRIVERS = [
+    { name: "Rahul S.", car: "Honda City · KA-01-AB-1234", rating: "4.9", eta: "5 mins", fare: 60, avatar: "👨🏽‍🦱", traffic: "heavy" },
+    { name: "Priya K.", car: "Maruti Swift · KA-05-XY-9876", rating: "4.8", eta: "8 mins", fare: 55, avatar: "👩🏻‍🦰", traffic: "medium" },
+    { name: "Arjun M.", car: "Hyundai Creta · KA-03-PQ-5544", rating: "5.0", eta: "12 mins", fare: 65, avatar: "👨🏽", traffic: "light" }
+  ];
+
+  let rideStep = 0; // 0: Arriving, 1: On Trip, 2: Arrived
+
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  function searchCarpools() {
+    document.getElementById('booking').classList.remove('active');
+    document.getElementById('searching').classList.add('active');
+    setTimeout(() => {
+      document.getElementById('searching').classList.remove('active');
+      renderMatches();
+      document.getElementById('matches').classList.add('active');
+    }, 2500);
+  }
+
+  function renderMatches() {
+    const list = document.getElementById('matchList');
+    list.innerHTML = MOCK_DRIVERS.map((d, i) => `
+      <div class="match-card" onclick="bookDriver(${i})">
+        <div class="match-avatar">${d.avatar}</div>
+        <div class="match-info">
+          <div class="match-name">${d.name} <span style="color: var(--text-mute); font-weight: 400; font-size: 12px;">★ ${d.rating}</span></div>
+          <div class="match-detail">${d.car} • ${d.eta} away</div>
+        </div>
+        <div class="match-price">₹${d.fare}</div>
+      </div>
+    `).join('');
+  }
+
+  function bookDriver(index) {
+    const d = MOCK_DRIVERS[index];
+    document.getElementById('driverName').textContent = d.name;
+    document.getElementById('driverCar').textContent = d.car;
+    document.getElementById('matches').classList.remove('active');
+    document.getElementById('confirmed').classList.add('active');
+    rideStep = 0;
+    document.getElementById('rideStatus').textContent = "Driver Arriving";
+    document.getElementById('statusBtn').textContent = "Simulate Driver Arrived";
+    toast("Carpool booked! " + d.name + " is on the way.");
+  }
+
+  function advanceRide() {
+    rideStep++;
+    const statusEl = document.getElementById('rideStatus');
+    const btn = document.getElementById('statusBtn');
+    if (rideStep === 1) {
+      statusEl.textContent = "On Trip to Drop";
+      btn.textContent = "Simulate Arrival at Destination";
+      toast("OTP verified. Trip started!");
+    } else if (rideStep === 2) {
+      statusEl.textContent = "Arrived at Destination";
+      btn.textContent = "View Receipt";
+      toast("You have arrived at your destination.");
+    } else if (rideStep === 3) {
+      document.getElementById('confirmed').classList.remove('active');
+      document.getElementById('completed').classList.add('active');
+    }
+  }
+
+  function resetApp() {
+    rideStep = 0;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('booking').classList.add('active');
+  }
+</script>
+</body>
+</html>
